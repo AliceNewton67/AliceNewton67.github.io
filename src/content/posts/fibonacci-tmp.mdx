@@ -1,0 +1,92 @@
+---
+title: "C++ 模板元编程：编译期 Fibonacci 与复杂度分析"
+date: 2026-08-20
+description: "用 C++ 模板元编程实现编译期 Fibonacci 数列，并在算法视角下分析其模板实例化复杂度。"
+tags:
+  - C++
+  - TMP
+  - 算法
+draft: false
+mathEnabled: true
+---
+
+现代 C++ 的模板元编程（Template Metaprogramming, TMP）让我们能在**编译期**完成大量计算。它并非黑盒：每一次实例化都是可预测、可复现的语法树展开。本文以经典 Fibonacci 为例，分析其复杂度模型。
+
+## 编译期 Fibonacci
+
+核心思路是用 `std::integral_constant` 推导对类型（type）做变换，而类型在编译期求值。以下是最朴素的递归版：
+
+```cpp
+#include <type_traits>
+
+template <std::size_t N>
+struct Fib : std::integral_constant<
+                 std::size_t,
+                 Fib<N - 1>::value + Fib<N - 2>::value> {};
+
+template <>
+struct Fib<0> : std::integral_constant<std::size_t, 0> {};
+
+template <>
+struct Fib<1> : std::integral_constant<std::size_t, 1> {};
+
+static_assert(Fib<10>::value == 55);
+```
+
+注意到这里没有**变量**，只有类型。递归的终止由模板特化（specialization）承担，等价于函数式语言中的模式匹配。
+
+## 复杂度分析：$\Theta(\varphi^N)$
+
+朴素递归的时间复杂度为 $T(N) = T(N-1) + T(N-2) + 1$，其增长与黄金比例相关：
+
+$$
+T(N) = \Theta\left(\varphi^N\right), \quad \varphi = \frac{1 + \sqrt{5}}{2} \approx 1.618
+$$
+
+编译期间，每次 `Fib<N>` 的实例化都会产生两条新实例化（`Fib<N-1>` 与 `Fib<N-2>`），因此**模板实例化的数量**同样以 $\varphi^N$ 增长。这意味着：
+
+- $N \le 30$ 时，编译时间几乎可忽略；
+- $N \ge 45$，编译器将消耗可观的内存与时间；
+- $N \ge 50$，极易触发默认模板递归深度上限。
+
+因此，**编译期计算同样受复杂度约束**，并不因"没有运行时"而免费。
+
+## 线性化：用循环展开替代递归
+
+改用 0-1 基例 + 递推式，可将位姿规模压缩为线性：
+
+```cpp
+template <std::size_t N, std::size_t A = 0, std::size_t B = 1>
+struct FibLin : FibLin<N - 1, B, A + B> {};
+
+template <std::size_t A, std::size_t B>
+struct FibLin<0, A, B> : std::integral_constant<std::size_t, A> {};
+
+static_assert(FibLin<60>::value == 1548008755920);
+```
+
+这里用**状态携带**（`A`、`B` 作为额外模板参数）把指数级递归改写为线性，实例化数量从 $\Theta(\varphi^N)$ 降为 $\Theta(N)$。这是 TMP 中典型的空间换时间优化，背后正是动态规划的"尾递归 + 累加器"范式。
+
+## 与 GFM 表格的对照
+
+| 实现方式 | 时间复杂度 | 空间复杂度 | $N=45$ 编译体验 |
+| --- | --- | --- | --- |
+| 朴素递归 | $\Theta(\varphi^N)$ | $\Theta(N)$ | 明显变慢 |
+| 线性递推 | $\Theta(N)$ | $\Theta(1)$ | 即时完成 |
+| 矩阵快速幂 | $\Theta(\log N)$ | $\Theta(\log N)$ | 快，且代码回退多 |
+
+> 结论：**编译期并非免罪符**。任何运行时可观测的复杂度过高，都会转化为编译期的"时间-空间"开销。
+
+## 用图片组织记忆
+
+```ts
+// Astro 的 <Image /> 组件在构建期生成响应式图片并惰性优化
+import { Image } from 'astro:assets';
+```
+
+下面这张图展示了两种实现的模板实例化增长趋势：
+
+import { Image } from 'astro:assets';
+import fibPlot from '../../assets/fibonacci-plot.svg';
+
+<Image src={fibPlot} alt="Fibonacci 编译期实例化数量随 N 增长的曲线对比（指数 vs 线性）" />

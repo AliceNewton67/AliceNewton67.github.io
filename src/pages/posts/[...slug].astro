@@ -1,0 +1,89 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// 静态生成所有文章路径（SSG）
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => import.meta.env.PROD ? !data.draft : true);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: {
+    id: string;
+    data: {
+      title: string;
+      date: Date;
+      description?: string;
+      tags: string[];
+    };
+    body: string;
+    render: () => Promise<{ Content: any }>;
+  };
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  datePublished: post.data.date.toISOString(),
+  description: post.data.description,
+  author: {
+    '@type': 'Person',
+    name: 'Ecliptic',
+  },
+};
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description ?? post.data.title}
+  :jsonLd={jsonLd}
+  canonicalPath={`/posts/${post.id}/`}
+>
+  <div class="mx-auto max-w-4xl px-6 py-12">
+    <a
+      href="/"
+      class="mb-8 inline-flex items-center gap-1 text-sm text-(--color-accent) hover:text-(--color-accent-strong)"
+    >
+      ← 返回文章列表
+    </a>
+    <article>
+      <header class="mb-8 border-b border-(--color-border) pb-8">
+        <h1 class="prose-title text-3xl font-bold tracking-tight">
+          {post.data.title}
+        </h1>
+        <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-(--color-muted)">
+          <time datetime={post.data.date.toISOString()}>
+            {post.data.date.toISOString().slice(0, 10)}
+          </time>
+          {post.data.tags.length > 0 && (
+            <ul class="flex flex-wrap gap-2">
+              {post.data.tags.map((tag) => (
+                <li
+                  class="rounded-full bg-(--color-surface-2) px-3 py-0.5 text-xs"
+                >
+                  #{tag}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </header>
+
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+
+    <footer class="mt-16 border-t border-(--color-border) pt-6 text-sm text-(--color-muted)">
+      <p>如果在阅读中发现错误，欢迎指正。</p>
+    </footer>
+  </div>
+</BaseLayout>

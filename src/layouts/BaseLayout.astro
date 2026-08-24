@@ -1,0 +1,106 @@
+---
+// 站点级元信息（可被页面覆盖）
+interface Props {
+  title: string;
+  description?: string;
+  /** 生成完整的 absolute URL，例如 /posts/xxx，缺省则用当前 URL */
+  canonicalPath?: string;
+  /** Open Graph 分享图 absolute URL（可选） */
+  ogImage?: string;
+  /** 文章结构化数据（JSON-LD）可选 */
+  jsonLd?: object;
+}
+
+const {
+  title,
+  description = '一个面向系统编程与算法研究的个人技术博客',
+  canonicalPath,
+  ogImage,
+  jsonLd,
+} = Astro.props;
+
+const site = new URL(Astro.site ?? 'https://ecliptic-event.example.com/', Astro.request.url);
+const canonicalURL = canonicalPath
+  ? new URL(canonicalPath.replace(/^\//, ''), site).href
+  : new URL(Astro.url.pathname, site).href;
+
+// 页面级标题：博客名在后
+const siteTitle = 'Ecliptic Event';
+const fullTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
+const ogImageURL = ogImage ? new URL(ogImage.replace(/^\//, ''), site).href : undefined;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 无 FOUC 的主题切换：
+         在 CSS 可用前同步读取 localStorage 并给 <html> 加 class="light"，
+         避免页面闪烁。该脚本极短，保留为必要 inline script。 -->
+    <script is:inline>
+      (() => {
+        const key = 'ecliptic-theme';
+        let theme = 'dark';
+        try { theme = localStorage.getItem(key) || 'dark'; } catch {}
+        if (theme === 'light') document.documentElement.classList.add('light');
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Canonical -->
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    {ogImageURL && <meta property="og:image" content={ogImageURL} />}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImageURL && <meta name="twitter:image" content={ogImageURL} />}
+
+    <!-- 主题色（浏览器地址栏） -->
+    <meta name="theme-color" content="#0b1017" />
+
+    <!-- RSS 源（可选：如有 feed） -->
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={siteTitle}
+      href={`${site.href}feed.xml`}
+    />
+
+    <!-- 字体：Inter + Noto Sans SC + JetBrains Mono（构建后为静态字体文件） -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- 全局样式：Tailwind v4 + 主题变量 + KaTeX 适配 -->
+    <link rel="stylesheet" href="/styles/global.css" />
+
+    <!-- 结构化数据 JSON-LD -->
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
+  </head>
+  <body class="min-h-dvh bg-(--color-bg) text-(--color-text) antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-(--color-accent) focus:px-4 focus:py-2"
+    >
+      跳到正文
+    </a>
+    <slot />
+  </body>
+</html>

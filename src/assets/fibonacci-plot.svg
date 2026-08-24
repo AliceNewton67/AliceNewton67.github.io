@@ -1,0 +1,38 @@
+<svg width="640" height="360" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">
+  <title>Fibonacci 编译期模板实例化数量随 N 增长</title>
+  <!-- 坐标轴 -->
+  <line x1="50" y1="310" x2="600" y2="310" stroke="#4b5563" stroke-width="2"/>
+  <line x1="50" y1="40" x2="50" y2="310" stroke="#4b5563" stroke-width="2"/>
+  <!-- X 轴刻度 -->
+  <g fill="#9ca3af" font-size="12" font-family="JetBrains Mono, monospace">
+    <text x="50" y="330" text-anchor="middle">N=0</text>
+    <text x="185" y="330" text-anchor="middle">N=10</text>
+    <text x="320" y="330" text-anchor="middle">N=20</text>
+    <text x="455" y="330" text-anchor="middle">N=30</text>
+    <text x="590" y="330" text-anchor="middle">N=40</text>
+  </g>
+  <!-- Y 轴刻度 -->
+  <g fill="#9ca3af" font-size="12" font-family="JetBrains Mono, monospace">
+    <text x="30" y="314" text-anchor="end">1</text>
+    <text x="30" y="244" text-anchor="end">100</text>
+    <text x="30" y="174" text-anchor="end">10⁴</text>
+    <text x="30" y="104" text-anchor="end">10⁶</text>
+    <text x="30" y="44" text-anchor="end">10⁸</text>
+  </g>
+  <!-- 朴素递归：指数增长曲线 (Fibonacci 实例化数量) -->
+  <path d="M 50 294 L 90 293 L 130 289 L 170 280 L 210 262 L 250 228 L 290 170 L 330 83 L 360 40"
+        fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+  <!-- 线性递推：近似直线 -->
+  <path d="M 50 294 L 210 280 L 370 268 L 530 256 L 600 252"
+        fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round"/>
+  <g font-family="Inter, sans-serif" font-size="13">
+    <rect x="120" y="320" width="0" height="0" />
+  </g>
+  <!-- 图例 -->
+  <g font-family="Inter, sans-serif" font-size="13" font-weight="500">
+    <line x1="410" y1="80" x2="450" y2="80" stroke="#3b82f6" stroke-width="3"/>
+    <text x="458" y="84" fill="#e5e7eb">朴素递归 Φ^N</text>
+    <line x1="410" y1="110" x2="450" y2="110" stroke="#22c55e" stroke-width="3"/>
+    <text x="458" y="114" fill="#e5e7eb">线性递推 O(N)</text>
+  </g>
+</svg>
