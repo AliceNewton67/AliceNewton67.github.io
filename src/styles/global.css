@@ -1,44 +1,47 @@
 @import "tailwindcss";
 
 /* ========== Tailwind v4 CSS-first 主题令牌 ==========
-   深色优先（dark first）：根默认即为深色；通过 <html class="light"> 切换浅色模式。
-   切换方式见 BaseLayout.astro：head 顶部的内联脚本读取
-   localStorage 记住用户偏好，并用 CSS 变量驱动，无 FOUC。
-   主色 #3B82F6 (blue-500)。 */
+   极简·学术杂志风 + 琥珀/暖橙主色。
+   深色优先（dark first）：根默认深色，通过 <html class="light"> 切浅色（无 FOUC）。
+   主色 D97706（amber-600）跨越深浅两态保持琥珀观感。 */
 
-/* 深色模式（默认） */
+/* 深浅两态共享的琥珀主色阶 */
 :root {
-  --color-bg: #0b1017;
-  --color-surface: #111827;
-  --color-surface-2: #1f2937;
-  --color-text: #e5e7eb;
-  --color-muted: #9ca3af;
-  --color-accent: #3b82f6;
-  --color-accent-strong: #60a5fa;
-  --color-border: #374151;
-  --color-code-bg: #0f172a;
   color-scheme: dark;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+
+  /* 深色模式（默认） */
+  --color-bg: #0f0d0a;
+  --color-surface: #17140f;
+  --color-surface-2: #221e17;
+  --color-text: #ece7df;
+  --color-muted: #a39a8c;
+  --color-accent: var(--amber-500);
+  --color-accent-strong: var(--amber-400);
+  --color-border: #36302a;
+  --color-code-bg: #14110c;
 }
 
-/* 浅色模式 */
 :root.light {
-  --color-bg: #ffffff;
-  --color-surface: #f9fafb;
-  --color-surface-2: #f3f4f6;
-  --color-text: #111827;
-  --color-muted: #6b7280;
-  --color-accent: #3b82f6;
-  --color-accent-strong: #2563eb;
-  --color-border: #e5e7eb;
-  --color-code-bg: #f8fafc;
   color-scheme: light;
+  --color-bg: #faf6f0;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1e9dd;
+  --color-text: #241e17;
+  --color-muted: #7a6f60;
+  --color-accent: var(--amber-600);
+  --color-accent-strong: var(--amber-700);
+  --color-border: #e6dccb;
+  --color-code-bg: #f6efe4;
 }
 
 @theme {
   --font-sans: "Inter", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* 颜色映射到语义变量，组件中通过 bg-(--color-bg) 等方式使用 */
   --color-bg: var(--color-bg);
   --color-surface: var(--color-surface);
   --color-surface-2: var(--color-surface-2);
@@ -52,7 +55,6 @@
 
 @layer base {
   html {
-    /* 减少字体加载造成排版偏移（Layout Shift） */
     font-display: swap;
     scroll-behavior: smooth;
   }
@@ -61,12 +63,10 @@
     background-color: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-sans);
-    /* 正文行高与最大宽度在阅读容器（prose）上单独设置 */
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
-  /* 代码块字体与连字 */
   code,
   pre,
   kbd,
@@ -75,86 +75,184 @@
     font-feature-settings: "liga" 1, "calt" 1;
   }
 
-  /* 链接 */
   a {
     color: var(--color-accent-strong);
     text-decoration: none;
+    transition: color 0.15s ease;
   }
-  a:hover {
-    text-decoration: underline;
-  }
+  :root:not(.light) a:hover { color: var(--amber-400); }
+  :root.light a:hover { color: var(--amber-600); }
 }
 
-/* ========== 正文排版（单栏阅读容器） ========== */
+/* ========== 文章卡片（学术杂志质感） ========== */
+.article-card {
+  position: relative;
+  display: block;
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-surface);
+  padding: 1.5rem 1.6rem;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.article-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--amber-500), transparent);
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+.article-card:hover {
+  border-color: color-mix(in srgb, var(--amber-500) 45%, var(--color-border));
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.45);
+}
+.article-card:hover::before { opacity: 1; }
+:root.light .article-card:hover {
+  box-shadow: 0 12px 32px -14px rgba(180, 83, 9, 0.28);
+}
+
+.article-card .card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.article-card .card-date::before {
+  content: "No.";
+  color: var(--amber-500);
+  font-weight: 600;
+  margin-right: 0.15rem;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--amber-500) 40%, var(--color-border));
+  background: color-mix(in srgb, var(--amber-500) 10%, transparent);
+  padding: 0.16rem 0.7rem;
+  font-size: 0.75rem;
+  color: var(--color-accent-strong);
+  transition: background 0.15s ease;
+}
+.tag-pill::before {
+  content: "#";
+  opacity: 0.55;
+}
+.tag-pill:hover {
+  background: color-mix(in srgb, var(--amber-500) 20%, transparent);
+}
+
+/* 首页页眉标识 */
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.brand-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--amber-400), var(--amber-600));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber-500) 20%, transparent);
+}
+
+/* ========== 正文排版（单栏阅读容器，学术杂志） ========== */
 .prose {
-  max-width: 72ch;              /* 阅读宽度 */
+  max-width: 72ch;
   margin-inline: auto;
-  line-height: 1.75;            /* 行高 1.75 */
+  line-height: 1.78;
   font-size: 1.0625rem;
 }
+.prose > * + * { margin-top: 1.1rem; }
 
-.prose > * + * {
-  margin-top: 1rem;
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  color: var(--color-text);
 }
-
-.prose h1,
-.prose h2,
-.prose h3,
-.prose h4 {
-  font-weight: 650;
-  line-height: 1.3;
-  margin-top: 2rem;
-  letter-spacing: -0.01em;
+.prose h2 {
+  font-size: 1.5rem;
+  margin-top: 2.4rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.45rem;
 }
-.prose h2 { font-size: 1.6rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.4rem; }
-.prose h3 { font-size: 1.3rem; }
-.prose h4 { font-size: 1.1rem; }
-
+.prose h3 { font-size: 1.22rem; margin-top: 1.8rem; }
+.prose h4 { font-size: 1.05rem; }
 .prose p { margin-block: 1rem; }
 .prose ul, .prose ol { padding-left: 1.5rem; }
-.prose li { margin-block: 0.4rem; }
-.prose blockquote {
-  border-left: 4px solid var(--color-accent);
-  padding-left: 1rem;
-  color: var(--color-muted);
-  font-style: italic;
+.prose li { margin-block: 0.42rem; }
+
+.prose strong {
+  color: color-mix(in srgb, var(--color-text) 82%, var(--amber-600));
+  font-weight: 650;
 }
 
-/* 表格（GFM） */
+.prose blockquote {
+  border-left: 3px solid var(--amber-500);
+  background: color-mix(in srgb, var(--amber-500) 6%, transparent);
+  margin-block: 1.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.2rem;
+  color: var(--color-muted);
+}
+.prose blockquote :first-child { margin-top: 0; }
+.prose blockquote :last-child { margin-bottom: 0; }
+
+/* 代码块 */
+.prose pre {
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 0.6rem;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* GFM 表格 */
 .prose table {
   width: 100%;
   border-collapse: collapse;
   margin-block: 1.5rem;
-  font-size: 0.95em;
+  font-size: 0.92em;
 }
 .prose th, .prose td {
   border: 1px solid var(--color-border);
-  padding: 0.5rem 0.75rem;
+  padding: 0.55rem 0.8rem;
   text-align: left;
+  vertical-align: top;
 }
 .prose th {
-  background: var(--color-surface-2);
-  font-weight: 600;
+  background: color-mix(in srgb, var(--amber-500) 12%, var(--color-surface-2));
+  font-weight: 650;
+  font-size: 0.92em;
 }
+.prose tr:nth-child(even) td { background: color-mix(in srgb, var(--color-surface-2) 45%, transparent); }
+
 .prose code:not(pre code) {
-  background: var(--color-surface-2);
-  padding: 0.15em 0.4em;
-  border-radius: 0.25em;
-  font-size: 0.9em;
+  background: color-mix(in srgb, var(--amber-500) 12%, var(--color-surface-2));
+  color: color-mix(in srgb, var(--color-text) 85%, var(--amber-600));
+  padding: 0.14em 0.42em;
+  border-radius: 0.28em;
+  font-size: 0.88em;
 }
 
-/* 分隔线、图像 */
-.prose hr { border-color: var(--color-border); margin-block: 2rem; }
-.prose img { max-width: 100%; height: auto; border-radius: 0.5rem; }
+.prose hr { border-color: var(--color-border); margin-block: 2.4rem; }
+.prose img { max-width: 100%; height: auto; border-radius: 0.5rem; border: 1px solid var(--color-border); }
 
-/* ========== KaTeX 深色模式适配 ==========
-   深色模式覆盖 KaTeX 默认黑色，通过 CSS 变量切换，构建产物纯 HTML 无 JS。 */
-.katex {
-  color: var(--color-text);
-}
-/* 独立公式块（display math）滚动避免溢出，防止 CLS */
+/* ========== KaTeX 主题适配 ========== */
+.katex { color: var(--color-text); }
 .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
-  padding-block: 0.25em;
+  padding-block: 0.3em;
 }

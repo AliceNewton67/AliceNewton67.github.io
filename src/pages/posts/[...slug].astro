@@ -36,7 +36,7 @@ const jsonLd = {
   description: post.data.description,
   author: {
     '@type': 'Person',
-    name: 'Ecliptic',
+    name: 'Alice',
   },
 };
 ---
@@ -48,42 +48,61 @@ const jsonLd = {
   canonicalPath={`/posts/${post.id}/`}
 >
   <div class="mx-auto max-w-4xl px-6 py-12">
-    <a
-      href="/"
-      class="mb-8 inline-flex items-center gap-1 text-sm text-(--color-accent) hover:text-(--color-accent-strong)"
-    >
-      ← 返回文章列表
-    </a>
+    <nav class="mb-10 flex items-center gap-4">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 rounded-md border border-(--color-border) px-3 py-1.5 font-mono text-xs text-(--color-muted) transition-colors hover:border-(--color-accent) hover:text-(--color-accent)"
+      >
+        ← 返回文章列表
+      </a>
+    </nav>
+
     <article>
-      <header class="mb-8 border-b border-(--color-border) pb-8">
-        <h1 class="prose-title text-3xl font-bold tracking-tight">
-          {post.data.title}
-        </h1>
-        <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-(--color-muted)">
-          <time datetime={post.data.date.toISOString()}>
+      <header class="border-b border-(--color-border) pb-10">
+        <div class="mb-3 flex items-center gap-3">
+          <span class="tag-pill">Article</span>
+          <time
+            datetime={post.data.date.toISOString()}
+            class="card-meta"
+          >
             {post.data.date.toISOString().slice(0, 10)}
           </time>
-          {post.data.tags.length > 0 && (
-            <ul class="flex flex-wrap gap-2">
-              {post.data.tags.map((tag) => (
-                <li
-                  class="rounded-full bg-(--color-surface-2) px-3 py-0.5 text-xs"
-                >
-                  #{tag}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
+        <h1 class="text-3xl md:text-4xl font-bold leading-[1.2] tracking-tight">
+          {post.data.title}
+        </h1>
+        {post.data.description && (
+          <p class="mt-4 max-w-2xl text-[0.98rem] leading-relaxed text-(--color-muted)">
+            {post.data.description}
+          </p>
+        )}
+        {post.data.tags.length > 0 && (
+          <ul class="mt-6 flex flex-wrap gap-2">
+            {post.data.tags.map((tag) => (
+              <li class="tag-pill">{tag}</li>
+            ))}
+          </ul>
+        )}
       </header>
 
-      <div class="prose">
+      <div class="prose mt-10">
         <Content />
       </div>
     </article>
 
-    <footer class="mt-16 border-t border-(--color-border) pt-6 text-sm text-(--color-muted)">
-      <p>如果在阅读中发现错误，欢迎指正。</p>
+    <footer class="mt-16 flex flex-col items-center gap-2 border-t border-(--color-border) pt-8 text-center">
+      <p class="text-sm text-(--color-muted)">
+        如果在阅读中发现错误，欢迎反馈指正。
+      </p>
+      <a
+        href="/"
+        class="mt-1 inline-flex items-center gap-1 font-mono text-xs text-(--color-accent) hover:text-(--color-accent-strong)"
+      >
+        ← 回到文章列表
+      </a>
+      <p class="mt-2 font-mono text-[0.7rem] tracking-wider uppercase text-(--color-muted) opacity-70">
+        Ecliptic Event
+      </p>
     </footer>
   </div>
 </BaseLayout>
