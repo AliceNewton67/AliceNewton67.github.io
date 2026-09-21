@@ -1,4 +1,5 @@
 // @ts-check
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import tailwindcss from '@tailwindcss/vite';
@@ -33,5 +34,13 @@ export default defineConfig({
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
+    // 临时绕行：Vite 8 的 SSR module runner 会把 CJS-only 的 picomatch@4
+    // 当 ESM 加载（require is not defined），导致 astro sync/build 直接失败。
+    // 指向 ESM 包装层后恢复正常。详见 docs/build-commands.md。
+    resolve: {
+      alias: {
+        picomatch: fileURLToPath(new URL('./scripts/picomatch-esm.mjs', import.meta.url)),
+      },
+    },
   },
 });
