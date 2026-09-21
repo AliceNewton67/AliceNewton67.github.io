@@ -7,6 +7,7 @@ tags:
   - 算法
   - 科普
 draft: false
+section: math
 mathEnabled: false
 ---
 

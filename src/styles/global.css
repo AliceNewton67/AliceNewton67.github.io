@@ -150,6 +150,58 @@
   background: color-mix(in srgb, var(--amber-500) 20%, transparent);
 }
 
+/* ========== 分区导航 ========== */
+.section-nav {
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+}
+.section-nav-home,
+.section-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  transition: color 0.15s ease;
+}
+.section-nav-home {
+  font-weight: 600;
+  color: var(--color-text);
+}
+.section-nav-link:hover,
+.section-nav-home:hover {
+  color: var(--color-accent-strong);
+}
+/* 当前分区（中文标签不做 uppercase，rune 保留原样） */
+.section-nav-link[aria-current="page"] {
+  color: var(--color-accent-strong);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+.section-nav-link[aria-current="page"] .section-nav-rune {
+  opacity: 1;
+}
+.section-nav-rune {
+  opacity: 0.55;
+  font-size: 0.85rem;
+}
+
+/* 分区区块（首页） */
+.section-block + .section-block {
+  margin-top: 3.5rem;
+}
+.section-head-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--amber-500) 55%, transparent),
+    transparent
+  );
+}
+
 /* 首页页眉标识 */
 .brand-row {
   display: flex;

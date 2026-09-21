@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getSection, sectionHref } from '../../config/sections';
 
 // 静态生成所有文章路径（SSG）
 export async function getStaticPaths() {
@@ -19,6 +20,7 @@ interface Props {
       date: Date;
       description?: string;
       tags: string[];
+      section: string;
     };
     body: string;
     render: () => Promise<{ Content: any }>;
@@ -27,6 +29,7 @@ interface Props {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const section = getSection(post.data.section);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -48,19 +51,27 @@ const jsonLd = {
   canonicalPath={`/posts/${post.id}/`}
 >
   <div class="mx-auto max-w-4xl px-6 py-12">
-    <nav class="mb-10 flex items-center gap-4">
+    <nav class="mb-10 flex flex-wrap items-center gap-3">
       <a
         href="/"
         class="inline-flex items-center gap-2 rounded-md border border-(--color-border) px-3 py-1.5 font-mono text-xs text-(--color-muted) transition-colors hover:border-(--color-accent) hover:text-(--color-accent)"
       >
-        ← 返回文章列表
+        ← 全部
       </a>
+      {section && (
+        <a
+          href={sectionHref(section.key)}
+          class="inline-flex items-center gap-2 rounded-md border border-(--color-border) px-3 py-1.5 font-mono text-xs text-(--color-muted) transition-colors hover:border-(--color-accent) hover:text-(--color-accent)"
+        >
+          {section.rune} {section.label}
+        </a>
+      )}
     </nav>
 
     <article>
       <header class="border-b border-(--color-border) pb-10">
         <div class="mb-3 flex items-center gap-3">
-          <span class="tag-pill">Article</span>
+          <span class="tag-pill">{section ? section.label : 'Article'}</span>
           <time
             datetime={post.data.date.toISOString()}
             class="card-meta"

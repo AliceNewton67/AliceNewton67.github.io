@@ -1,0 +1,88 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { SECTIONS, getSection, sectionHref } from '../../config/sections';
+
+// 每个分区一个静态页：/section/cs/、/section/math/、/section/game/
+export async function getStaticPaths() {
+  return SECTIONS.map((section) => ({
+    params: { section: section.key },
+  }));
+}
+
+const { section: key } = Astro.params;
+const section = getSection(key!)!;
+
+const posts = (await getCollection('posts'))
+  .filter((post) => import.meta.env.PROD ? !post.data.draft : true)
+  .filter((post) => post.data.section === section.key)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const title = `${section.label} · ${section.labelEn}`;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: title,
+  description: section.description,
+  isPartOf: { '@type': 'WebSite', name: 'Ecliptic Event' },
+};
+---
+
+<BaseLayout
+  title={title}
+  description={section.description}
+  canonicalPath={sectionHref(section.key)}
+  :jsonLd={jsonLd}
+>
+  <div class="mx-auto max-w-3xl px-6 py-14">
+    <header class="border-b border-(--color-border) pb-8">
+      <div class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-(--color-muted)">
+        <a href="/" class="text-(--color-muted) hover:text-(--color-accent-strong)">Ecliptic Event</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-(--color-accent-strong)">{section.labelEn}</span>
+      </div>
+
+      <h1 class="mt-5 flex items-baseline gap-3 text-3xl md:text-4xl font-bold leading-[1.2] tracking-tight">
+        <span class="font-mono text-(--color-accent-strong)">{section.rune}</span>
+        {section.label}
+        <span class="font-mono text-sm font-normal text-(--color-muted)">({posts.length})</span>
+      </h1>
+
+      <p class="mt-4 max-w-lg text-[0.98rem] leading-relaxed text-(--color-muted)">
+        {section.description}
+      </p>
+    </header>
+
+    <main id="main" class="mt-10">
+      {posts.length > 0 ? (
+        <ul class="space-y-6">
+          {posts.map((post, i) => (
+            <li>
+              <PostCard
+                post={post}
+                volume={`Vol. ${String(i + 1).padStart(2, '0')}`}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="rounded-lg border border-dashed border-(--color-border) px-4 py-10 text-center font-mono text-xs text-(--color-muted)">
+          这个分区还空着。
+        </p>
+      )}
+
+      <nav class="mt-12 flex flex-wrap items-center gap-3" aria-label="其他分区">
+        {SECTIONS.filter((s) => s.key !== section.key).map((s) => (
+          <a
+            href={sectionHref(s.key)}
+            class="inline-flex items-center gap-2 rounded-md border border-(--color-border) px-3 py-1.5 font-mono text-xs text-(--color-muted) transition-colors hover:border-(--color-accent) hover:text-(--color-accent-strong)"
+          >
+            <span aria-hidden="true">{s.rune}</span>
+            {s.label}
+          </a>
+        ))}
+      </nav>
+    </main>
+  </div>
+</BaseLayout>

@@ -1,0 +1,30 @@
+---
+// 全站分区导航：只输出静态链接，activation 由一段极短的 inline script 完成。
+import { SECTIONS, sectionHref } from '../config/sections';
+---
+
+<nav class="section-nav" aria-label="分区导航">
+  <div class="mx-auto flex max-w-3xl flex-wrap items-center gap-x-5 gap-y-2 px-6 py-3">
+    <a href="/" class="section-nav-home" data-nav="home">Ecliptic Event</a>
+    <ul class="flex flex-wrap items-center gap-x-4 gap-y-2">
+      {SECTIONS.map((s) => (
+        <li>
+          <a href={sectionHref(s.key)} class="section-nav-link" data-nav={s.key}>
+            <span class="section-nav-rune" aria-hidden="true">{s.rune}</span>
+            {s.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</nav>
+
+<script is:inline>
+  (() => {
+    const path = location.pathname.replace(/index\.html$/, '');
+    const key = path.startsWith('/section/') ? path.split('/')[2] : 'home';
+    document.querySelectorAll('[data-nav]').forEach((el) => {
+      if (el.getAttribute('data-nav') === key) el.setAttribute('aria-current', 'page');
+    });
+  })();
+</script>

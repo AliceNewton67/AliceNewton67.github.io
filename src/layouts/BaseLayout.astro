@@ -1,6 +1,8 @@
 ---
 import '../styles/global.css';
 // 站点级元信息（可被页面覆盖）
+import SectionNav from '../components/SectionNav.astro';
+
 interface Props {
   title: string;
   description?: string;
@@ -101,6 +103,7 @@ const ogImageURL = ogImage ? new URL(ogImage.replace(/^\//, ''), site).href : un
     >
       跳到正文
     </a>
+    <SectionNav />
     <slot />
   </body>
 </html>

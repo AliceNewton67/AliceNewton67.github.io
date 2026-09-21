@@ -1,0 +1,45 @@
+---
+// 文章卡片：首页与分区页共用
+interface Props {
+  post: {
+    id: string;
+    data: {
+      title: string;
+      date: Date;
+      description?: string;
+      tags: string[];
+    };
+  };
+  /** 右上角编号，例如 Vol. 01；留空则不显示 */
+  volume?: string;
+}
+
+const { post, volume } = Astro.props;
+---
+
+<a class="article-card text-inherit" href={`/posts/${post.id}/`}>
+  <div class="flex items-baseline justify-between gap-4">
+    <time datetime={post.data.date.toISOString()} class="card-date card-meta">
+      {post.data.date.toISOString().slice(0, 10)}
+    </time>
+    {volume && <span class="card-meta">{volume}</span>}
+  </div>
+
+  <h3 class="mt-3 text-[1.28rem] font-bold leading-snug tracking-tight">
+    {post.data.title}
+  </h3>
+
+  {post.data.description && (
+    <p class="mt-2 line-clamp-3 text-[0.95rem] leading-relaxed text-(--color-muted)">
+      {post.data.description}
+    </p>
+  )}
+
+  {post.data.tags.length > 0 && (
+    <ul class="mt-4 flex flex-wrap gap-2">
+      {post.data.tags.map((tag) => (
+        <li class="tag-pill">{tag}</li>
+      ))}
+    </ul>
+  )}
+</a>

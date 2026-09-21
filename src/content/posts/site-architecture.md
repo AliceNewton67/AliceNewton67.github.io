@@ -7,6 +7,7 @@ tags:
   - 博客
   - 备忘
 draft: false
+section: cs
 mathEnabled: false
 ---
 
@@ -44,7 +45,7 @@ ecliptic-event/
 内容集合的 schema，用 zod 定义 `posts` 集合：
 
 - loader 是 `glob({ pattern: '**/*.{md,mdx}', base: './src/content/posts' })`——Content Layer API，`src/content/posts/` 下的 md/mdx 自动成为文章；
-- 字段：`title`（必填）、`date`（自动转 Date）、`tags`（默认空）、`draft`（默认 false，**生产构建会过滤 draft: true 的文章**）、`mathEnabled`（数学公式开关标记）、`description`（首页列表摘要）。
+- 字段：`title`（必填）、`date`（自动转 Date）、`section`（分区，取值 `cs` / `math` / `game`，默认 `cs`）、`tags`（默认空）、`draft`（默认 false，**生产构建会过滤 draft: true 的文章**）、`mathEnabled`（数学公式开关标记）、`description`（首页列表摘要）。
 
 **改 frontmatter 字段时必须同步改这里**，否则构建报 schema 校验错误。
 
@@ -52,19 +53,28 @@ ecliptic-event/
 
 ```text
 src/
+├── config/sections.ts        # 分区定义（label / 描述 / 图标），全站分区唯一来源
 ├── content/posts/            # 文章本体（md / mdx）
 ├── content.config.ts         # schema（见上）
 ├── pages/                    # 路由 = 文件结构
-│   ├── index.astro           # 首页：文章列表
+│   ├── index.astro           # 首页：按分区展示的文章总览
+│   ├── section/[section].astro # 分区列表页（/section/cs|math|game/）
 │   └── posts/[...slug].astro # 文章详情页模板（动态路由）
 ├── layouts/
 │   ├── BaseLayout.astro      # 真正在用的布局：<head> 全家桶 + 主题切换
 │   └── Layout.astro          # 模板自带的空壳，实际已闲置
+├── components/               # PostCard（卡片）、SectionNav（分区导航）
 ├── styles/global.css         # Tailwind v4 主题 + 全部自定义样式
-├── components/
-│   └── Welcome.astro         # 模板自带的欢迎页组件，未使用
 └── assets/                   # 文章引用的图片（构建时优化）
 ```
+
+### `src/config/sections.ts` —— 分区定义
+
+一个数组就是全部真相：`{ key, label, labelEn, description, rune }`。它同时驱动
+frontmatter 里 `section` 的合法取值、顶部导航、首页分区区块、分区页。
+
+加新分区要动两处：这个文件的 `SECTIONS`，以及 `content.config.ts` 里内联的
+`SECTION_KEYS`（content 配置刻意不 import 本地模块，见 `docs/build-commands.md` 的故障排查）。
 
 ### `src/pages/` —— 路由层
 
@@ -72,18 +82,25 @@ Astro 的约定：`pages/` 下的文件路径 = URL 路径。
 
 **`index.astro`（首页 `/`）**：
 
-- frontmatter 里 `getCollection('posts')` 拉全部文章，**生产环境过滤 draft**，按日期倒序；
-- 渲染：顶部品牌行 → Hero 大标题（"Notes on C++ · Algorithms · Systems"）→ 文章列表（每篇一张 `.article-card`，显示日期、Vol. 编号、标题、摘要、标签）→ 页脚；
+- frontmatter 里 `getCollection('posts')` 拉全部文章，**生产环境过滤 draft**，按日期倒序，再按 `section` 分组；
+- 渲染：顶部品牌行 → Hero 大标题（"Notes on C++ · Algorithms · Systems"）→ 分区索引（锚点跳转）→ 每个分区一段（标题/文章数/描述/卡片列表/"查看全部"）→ 页脚；
+- 空分区照样渲染，显示占位提示——这样以后写游戏类文章不必回头改首页；
 - 内嵌 JSON-LD（WebSite 类型）做 SEO。
+
+**`section/[section].astro`（分区页 `/section/<key>/`）**：
+
+- `getStaticPaths()` 为每个分区生成一个静态页，只列出该分区的文章；
+- 头部面包屑 + 分区大标题 + 描述，底部给"其他分区"的跳转按钮；
+- 空分区同样显示占位提示。
 
 **`posts/[...slug].astro`（文章页 `/posts/<id>/`）**：
 
 - `getStaticPaths()` 在构建期为每篇文章生成一个静态页面，slug 就是文件名（如 `p-vs-np.md` → `/posts/p-vs-np/`）；
 - 同样过滤 draft、`render(post)` 把 markdown 编译成组件 `<Content />`；
-- 文章页骨架：返回链接 → 头部（tag-pill、日期、标题、摘要、标签）→ `.prose` 正文容器 → 页脚；
+- 文章页骨架：返回链接（全部 / 所属分区）→ 头部（分区 tag-pill、日期、标题、摘要、标签）→ `.prose` 正文容器 → 页脚；
 - JSON-LD 用 BlogPosting 类型，canonicalPath 指向自身。
 
-**加新文章不需要动 pages/ 任何文件**——往 `content/posts/` 扔 md 即可，两个页面都会自动带上它。
+**加新文章不需要动 pages/ 任何文件**——往 `content/posts/` 扔 md、写上 `section` 即可，首页和对应分区页都会自动带上它。
 
 ### `src/layouts/` —— 布局层
 
@@ -97,7 +114,12 @@ Astro 的约定：`pages/` 下的文件路径 = URL 路径。
 
 Props：`title`（必填）、`description`、`canonicalPath`、`ogImage`、`jsonLd`。
 
-**`Layout.astro`** 是 `npm create astro` 模板遗留的空壳（`<title>Astro Basics</title>`），没有被任何页面引用，可以删。
+模板自带的 `Layout.astro` 空壳（`<title>Astro Basics</title>`）早期已删除，`src/layouts/` 下现在只剩 `BaseLayout.astro`。
+
+### `src/components/` —— 组件层
+
+- `PostCard.astro`：文章卡片（日期／Vol. 编号／标题／摘要／标签），首页与分区页共用；
+- `SectionNav.astro`：顶部固定分区导航，输出静态链接，再由一段极短的 inline script 按当前路径给对应项加 `aria-current="page"`。
 
 ### `src/styles/global.css` —— 样式层
 
@@ -106,7 +128,7 @@ Tailwind v4 是 CSS-first 配置，这个文件是设计系统的唯一来源：
 - `@import "tailwindcss"` 引入框架；
 - `:root` 定义**琥珀主色阶**（amber-400~700）+ **深色模式全部变量**（`--color-bg/surface/text/muted/accent/border/code-bg`）；`:root.light` 覆盖为浅色值——主题切换就是切这一个 class；
 - `@theme { ... }` 把变量暴露给 Tailwind 工具类（`text-(--color-muted)` 这种语法就是从这来的），并定义 `--font-sans` / `--font-mono`；
-- 自定义组件类：`.article-card`（首页卡片，带左侧琥珀色 hover 条）、`.tag-pill`、`.brand-row` / `.brand-dot`、`.card-meta`；
+- 自定义组件类：`.article-card`（卡片，带左侧琥珀色 hover 条）、`.tag-pill`、`.brand-row` / `.brand-dot`、`.card-meta`、`.section-nav` / `.section-nav-link`（分区导航）、`.section-block` / `.section-head-divider`（首页分区区块）；
 - `.prose` 正文排版容器：标题/段落/列表/blockquote/表格/代码/图片/HR 的全套样式，文章内容全靠它渲染；
 - `.katex` 颜色适配主题变量。
 
@@ -114,7 +136,7 @@ Tailwind v4 是 CSS-first 配置，这个文件是设计系统的唯一来源：
 
 ### `src/content/posts/` —— 内容层
 
-目前三篇：`fibonacci-tmp.mdx`（MDX 示例，含代码高亮和公式）、`p-vs-np.md`、`iwyu-vs-include-cleaner.md`。
+目前四篇：计算机区 `fibonacci-tmp.mdx`（MDX 示例，含代码高亮和公式）、`iwyu-vs-include-cleaner.md`、`site-architecture.md`（本篇），数学区 `p-vs-np.md`。
 
 frontmatter 模板：
 
@@ -123,6 +145,7 @@ frontmatter 模板：
 title: "标题"
 date: 2026-09-16
 description: "首页列表显示的摘要"
+section: cs          # cs / math / game，见 src/config/sections.ts
 tags: [C++, 算法]
 draft: false        # true = 生产构建隐藏
 mathEnabled: false  # 用到 $...$ 公式时设 true
@@ -164,9 +187,13 @@ pnpm preview   # 本地预览构建产物（push 前确认用）
 
 | 想做什么 | 改哪里 |
 |---|---|
-| 写新文章 | `src/content/posts/` 新建 md，frontmatter 按 schema |
+| 写新文章 | `src/content/posts/` 新建 md，frontmatter 按 schema（含 `section`） |
+| 加一个新分区 | `src/config/sections.ts` + `src/content.config.ts` 的 `SECTION_KEYS` |
 | 调配色/字体/暗色 | `src/styles/global.css` 的 `:root` / `:root.light` / `@theme` |
 | 改首页版式 | `src/pages/index.astro` |
+| 改分区页版式 | `src/pages/section/[section].astro` |
+| 改文章卡片 | `src/components/PostCard.astro` |
+| 改分区导航 | `src/components/SectionNav.astro` |
 | 改文章页版式 | `src/pages/posts/[...slug].astro` |
 | 改 `<head>`/SEO/主题脚本 | `src/layouts/BaseLayout.astro` |
 | 加/改 frontmatter 字段 | `src/content.config.ts` |
@@ -175,5 +202,5 @@ pnpm preview   # 本地预览构建产物（push 前确认用）
 
 ## 待清理项
 
-- `Layout.astro`、`components/Welcome.astro`、`assets/astro.svg`、`assets/background.svg` 均为模板遗留，未被引用，可删；
 - `docs/`（katex-check、deploy-github-pages 等本机文档）不参与构建，是运维备忘。
+- `scripts/picomatch-esm.mjs` 与 `astro.config.mjs` 里的 `picomatch` alias 是 Vite 8 的临时绕行，上游修好后可删（见 `docs/build-commands.md`）。

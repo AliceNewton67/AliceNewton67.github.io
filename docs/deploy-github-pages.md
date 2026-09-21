@@ -41,8 +41,12 @@ git push -u origin main
 - 推送后 Actions 自动运行；也可在 **Actions → Deploy Astro site to Pages → Run workflow** 手动触发。
 - 构建成功后，站点将发布在：
   `https://AliceNewton67.github.io/`
-- 首页 = `src/pages/index.astro`（文章列表），示例文章 =
+- 首页 = `src/pages/index.astro`（按分区展示的文章总览），示例文章 =
   `https://AliceNewton67.github.io/posts/fibonacci-tmp/`
+- 分区页：
+  `https://AliceNewton67.github.io/section/cs/`、
+  `https://AliceNewton67.github.io/section/math/`、
+  `https://AliceNewton67.github.io/section/game/`
 
 ## 注意事项
 
