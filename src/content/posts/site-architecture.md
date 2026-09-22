@@ -136,7 +136,9 @@ Tailwind v4 是 CSS-first 配置，这个文件是设计系统的唯一来源：
 
 ### `src/content/posts/` —— 内容层
 
-目前四篇：计算机区 `fibonacci-tmp.mdx`（MDX 示例，含代码高亮和公式）、`iwyu-vs-include-cleaner.md`、`site-architecture.md`（本篇），数学区 `p-vs-np.md`。
+目前五篇。计算机区：`tu-to-target-dependencies.md`（TU / CMake target / 依赖与编译顺序）、`iwyu-vs-include-cleaner.md`、`site-architecture.md`（本篇）、`fibonacci-tmp.mdx`（MDX 示例，含代码高亮和公式）；数学区：`p-vs-np.md`。
+
+文章里的插图放在 `src/assets/`，用相对路径引用（如 `../../assets/cpp-dependency-graph.svg`），Astro 构建时会做资源优化并改写为带内容哈希的 URL。
 
 frontmatter 模板：
 

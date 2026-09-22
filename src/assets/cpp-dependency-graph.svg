@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 580" width="980" height="580" font-family="Inter, 'Noto Sans SC', system-ui, sans-serif" role="img" aria-label="从源码到可执行的依赖关系图">
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto">
+      <path d="M0,0 L7.5,3 L0,6 z" fill="#a39a8c" />
+    </marker>
+    <marker id="arrow-amber" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto">
+      <path d="M0,0 L7.5,3 L0,6 z" fill="#d97706" />
+    </marker>
+  </defs>
+
+  <rect x="1" y="1" width="978" height="578" rx="12" fill="#17140f" stroke="#36302a" />
+  <text x="32" y="44" fill="#f59e0b" font-size="14" font-weight="700" letter-spacing="2">C++ DEPENDENCY GRAPH</text>
+  <text x="32" y="68" fill="#a39a8c" font-size="12">实线 = CMake 认识并调度的依赖　·　虚线 = 真实存在但 CMake 看不见的依赖</text>
+  <line x1="32" y1="86" x2="948" y2="86" stroke="#36302a" />
+
+  <!-- dll.h -->
+  <rect x="32" y="120" width="150" height="50" rx="8" fill="#221e17" stroke="#d97706" />
+  <text x="107" y="150" fill="#ece7df" font-size="13" text-anchor="middle">dll.h</text>
+
+  <!-- pch.h -->
+  <rect x="32" y="215" width="150" height="50" rx="8" fill="#221e17" stroke="#d97706" />
+  <text x="107" y="245" fill="#ece7df" font-size="13" text-anchor="middle">pch.h</text>
+
+  <!-- utils.h -->
+  <rect x="32" y="310" width="150" height="50" rx="8" fill="#221e17" stroke="#36302a" />
+  <text x="107" y="340" fill="#ece7df" font-size="13" text-anchor="middle">utils.h</text>
+
+  <!-- TU a.cpp -->
+  <rect x="300" y="118" width="150" height="54" rx="8" fill="#221e17" stroke="#36302a" />
+  <text x="375" y="150" fill="#ece7df" font-size="13" text-anchor="middle">a.cpp</text>
+
+  <!-- TU b.cpp -->
+  <rect x="300" y="228" width="150" height="54" rx="8" fill="#221e17" stroke="#36302a" />
+  <text x="375" y="260" fill="#ece7df" font-size="13" text-anchor="middle">b.cpp</text>
+
+  <!-- TU c.cpp -->
+  <rect x="300" y="338" width="150" height="54" rx="8" fill="#221e17" stroke="#36302a" />
+  <text x="375" y="370" fill="#ece7df" font-size="13" text-anchor="middle">c.cpp</text>
+
+  <!-- compile edges -->
+  <path d="M182,143 L300,143" stroke="#a39a8c" stroke-width="1.5" marker-end="url(#arrow)" />
+  <path d="M182,238 L240,238 L240,251 L300,251" stroke="#a39a8c" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+  <path d="M182,333 L255,333 L255,361 L300,361" stroke="#a39a8c" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+
+  <text x="212" y="134" fill="#7a6f60" font-size="10.5">#include</text>
+  <text x="246" y="229" fill="#7a6f60" font-size="10.5">#include</text>
+  <text x="261" y="324" fill="#7a6f60" font-size="10.5">#include</text>
+
+  <!-- obj -->
+  <rect x="520" y="120" width="96" height="50" rx="5" fill="#14110c" stroke="#36302a" />
+  <text x="568" y="150" fill="#ece7df" font-size="12.5" text-anchor="middle">a.obj</text>
+  <rect x="520" y="230" width="96" height="50" rx="5" fill="#14110c" stroke="#36302a" />
+  <text x="568" y="260" fill="#ece7df" font-size="12.5" text-anchor="middle">b.obj</text>
+  <rect x="520" y="340" width="96" height="50" rx="5" fill="#14110c" stroke="#36302a" />
+  <text x="568" y="370" fill="#ece7df" font-size="12.5" text-anchor="middle">c.obj</text>
+
+  <path d="M450,145 L520,145" stroke="#a39a8c" stroke-width="1.5" marker-end="url(#arrow)" />
+  <path d="M450,255 L520,255" stroke="#a39a8c" stroke-width="1.5" marker-end="url(#arrow)" />
+  <path d="M450,365 L520,365" stroke="#a39a8c" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="462" y="137" fill="#7a6f60" font-size="10.5">编译</text>
+  <text x="462" y="247" fill="#7a6f60" font-size="10.5">编译</text>
+  <text x="462" y="357" fill="#7a6f60" font-size="10.5">编译</text>
+
+  <!-- static lib -->
+  <rect x="690" y="205" width="120" height="75" rx="8" fill="#221e17" stroke="#f59e0b" />
+  <text x="750" y="238" fill="#ece7df" font-size="13" text-anchor="middle">mylib.lib</text>
+  <text x="750" y="258" fill="#a39a8c" font-size="10.5" text-anchor="middle">静态库归档</text>
+
+  <path d="M616,145 L655,145 L655,225 L690,225" stroke="#a39a8c" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+  <path d="M616,255 L690,255" stroke="#a39a8c" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="600" y="196" fill="#7a6f60" font-size="10.5">归档 ar / lib</text>
+
+  <!-- link node -->
+  <rect x="620" y="360" width="200" height="62" rx="8" fill="#221e17" stroke="#f59e0b" />
+  <text x="720" y="386" fill="#ece7df" font-size="13" text-anchor="middle">链接器</text>
+  <text x="720" y="406" fill="#a39a8c" font-size="10.5" text-anchor="middle">符号解析 · 重定位</text>
+
+  <path d="M568,390 L620,390" stroke="#a39a8c" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="576" y="382" fill="#7a6f60" font-size="10.5">.obj</text>
+  <path d="M750,280 L750,360" stroke="#a39a8c" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="758" y="316" fill="#7a6f60" font-size="10.5">按需抽取</text>
+
+  <!-- outputs -->
+  <rect x="862" y="426" width="86" height="52" rx="5" fill="#14110c" stroke="#36302a" />
+  <text x="905" y="458" fill="#ece7df" font-size="12" text-anchor="middle">.exe</text>
+  <rect x="748" y="452" width="86" height="52" rx="5" fill="#14110c" stroke="#36302a" />
+  <text x="791" y="484" fill="#ece7df" font-size="12" text-anchor="middle">.dll</text>
+
+  <path d="M820,390 L905,390 L905,426" stroke="#a39a8c" stroke-width="1.5" fill="none" marker-end="url(#arrow)" />
+  <path d="M720,422 L720,452" stroke="#a39a8c" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <!-- dashed: link-time dep on dll -->
+  <path d="M782,452 L782,300 L182,300 L182,170" stroke="#d97706" stroke-width="1.5" stroke-dasharray="5 4" fill="none" marker-end="url(#arrow-amber)" />
+  <text x="600" y="294" fill="#d97706" font-size="10.5">链接期：dll.lib 提供符号占位</text>
+
+  <!-- loading note -->
+  <text x="748" y="530" fill="#7a6f60" font-size="10.5">运行时才查 .dll 本身</text>
+  <text x="32" y="530" fill="#7a6f60" font-size="11">编译顺序 = 有向无环图上的拓扑序；顺序错了，编译期与链接期会分别以「找不到头文件」和「未解析的外部符号」两种面貌报错。</text>
+</svg>
