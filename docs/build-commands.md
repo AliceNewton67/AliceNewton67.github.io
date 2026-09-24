@@ -58,6 +58,108 @@ pnpm preview
 - 将 `dist/` 交给任意静态服务器（Nginx / Caddy / Vercel / Netlify）即可部署。
 - 对 `/404.html`：多数平台会自动用于未匹配路由；若需自定义 `404`，新建 `src/pages/404.astro`。
 
+## 新增一篇文章：从 md 到上线
+
+**页面是自动的。** `src/pages/index.astro`（首页分区总览）与
+`src/pages/section/[section].astro`（分区页）都在构建时遍历内容集合，
+所以新增文章**不需要改任何页面文件**——往 `src/content/posts/` 里放一个
+`.md`（或 `.mdx`）就够了，首页、分区页、导航、sitemap 都会自动带上它。
+
+### 完整流程
+
+```bash
+cd ecliptic-event
+
+# 1. 写文章
+#    src/content/posts/你的文章.md
+
+# 2. 本地构建，提前发现 frontmatter / 语法错误（可跳过，但推荐）
+pnpm build
+
+# 3. 提交源码 —— 这一步最容易被漏掉
+git add src/content/posts/你的文章.md
+#    文中有插图时，插图也要一起加：
+# git add src/assets/你的图.svg
+git commit -m "feat(posts): 新增《标题》"
+
+# 4. 推送：这才是触发部署的动作
+git push origin main
+
+# 5. 看 CI（约 1–3 分钟）
+#    https://github.com/AliceNewton67/AliceNewton67.github.io/actions
+```
+
+**`pnpm build` 不上传任何东西。** 它只生成 `dist/`，而 `dist/` 在 `.gitignore` 里、
+仓库中没有任何 dist 文件被跟踪。上线完全由 CI 完成：
+
+```text
+push main  →  Actions: pnpm install --frozen-lockfile
+                        pnpm build
+                        upload dist/  →  deploy-pages
+```
+
+**服务器用的是你 push 的源码，自己重新构建**，与本地 `dist/` 无关。
+所以 `git add` 只需要加源码（md、插图、配置），永远不用管 `dist/`。
+
+### frontmatter 规则
+
+只有 `title` 和 `date` 没有默认值，其余全有：
+
+| 字段 | 必填 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| `title` | ✅ | — | 文章标题 |
+| `date` | ✅ | — | `YYYY-MM-DD`，决定排序 |
+| `section` | | `cs` | `cs` / `math` / `game`，取值见上节 |
+| `tags` | | `[]` | 首页与文章页的标签胶囊 |
+| `draft` | | `false` | `true` 时**生产构建会排除** |
+| `mathEnabled` | | `false` | 目前只是标记字段，没有代码读它 |
+| `description` | | — | 首页/分区页卡片上的摘要 |
+
+最小可用：
+
+```markdown
+---
+title: "标题"
+date: 2026-09-22
+description: "首页列表和分区页显示的摘要"
+section: cs
+tags:
+  - C++
+draft: true
+---
+
+正文。
+```
+
+### 几条容易踩的规则
+
+- **文件名就是 URL**：`foo-bar.md` → `/posts/foo-bar/`。发布后改文件名等于换地址，
+  旧链接 404。第一次就用 kebab-case 定好。
+- **图片放 `src/assets/`**，md 里用**相对路径**引用：
+  `![说明](../../assets/你的图.svg)`。构建时会做资源优化并改写为带内容哈希的 URL。
+  放 `public/` 则是原样拷贝、不走优化（适合 favicon 这类固定路径文件）。
+- **公式不需要开关**：KaTeX 在 `astro.config.mjs` 里全局接好了（`remark-math` +
+  `rehype-katex`），正文直接写 `$...$` / `$$...$$` 即可。`mathEnabled` 不控制任何行为。
+- **`draft` 默认 `false`，即"新建一个 md 就是发布"**。想先私下写，显式写
+  `draft: true`：生产构建过滤它，但 `pnpm dev` 本地仍能看到。
+- **新文件是 untracked，`git commit -a` 不会带上它**。漏加的症状很迷惑：
+  CI 构建成功、本地 `dist/` 里也有这篇文章，线上却没有。`git status` 里看到
+  `??` 就是它。
+
+### 构建后自查（不起服务器）
+
+`dist/` 是纯静态 HTML，可以直接查文件确认：
+
+```bash
+# 文章是否生成
+ls dist/posts/你的文章/index.html
+
+# 分区页是否带上它
+grep -c "你的标题" dist/section/cs/index.html
+```
+
+线上生效后若浏览器还是旧版，Ctrl+F5 硬刷（GitHub Pages 有 `cache-control: max-age=600`）。
+
 ## 性能与优化的注意点
 
 - **KaTeX 在 build stage 全程渲染**，产物 HTML 为最终渲染结果，无客户端 JS。
@@ -98,3 +200,15 @@ pnpm preview
 | `pnpm build` | 生产构建（产出 `dist/`） |
 | `pnpm preview` | 本地预览构建产物 |
 | `pnpm astro --help` | Astro CLI 帮助 |
+| `git push origin main` | 触发 CI 构建与 Pages 部署 |
+
+### 本机（Windows）push 注意
+
+若 `git push` 报 `schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS`，
+是本机 git 用 Windows 证书库握手失败，改用 OpenSSL 后端即可：
+
+```bash
+git config --global http.sslBackend openssl   # 一次性设置，持久生效
+```
+
+该报错同样会影响 PowerShell / curl 访问 GitHub API；Node 的 `fetch` 不受影响。
