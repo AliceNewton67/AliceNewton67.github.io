@@ -1,7 +1,7 @@
 ---
 title: 10分钟开始使用deepseek harness
 date: 2026-09-24
-description: "deepseek大家耳熟能详，deepseek harness则是deepseek的专务，一句话他帮你干活，不仅仅是聊天工具"
+description: "deepseek大家耳熟能详，deepseek harness则是deepseek的专武，一句话他帮你干活，不仅仅是聊天工具"
 tags:
   - Tutorial
 draft: false
@@ -9,12 +9,15 @@ section: cs
 mathEnabled: false
 ---
 > 使用deepseek harness肯定是要给deepseek充钱的！我们最后一步再决定充不充！
+
 > 开始使用deepseek harness仅需要极短的步骤，门槛极低，电脑小白也能看得懂
+
 > 仅面向windows用户（非苹果电脑）
-> STEP.1 如何安装node
-> STEP.2 如何使用powershell
-> STEP.3 如何安装dsh(deepseek harness)
-> STEP.4 充钱获取api-key
+
+1. 如何安装node
+2. 如何使用powershell
+3. 如何安装dsh（deepseek harness）
+4. 充钱获取api-key
 
 ## 安装node
 点击下面链接直接下载，然后使用默认选项，一路确认安装就行了
