@@ -1,0 +1,55 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+
+// 私密区：只列出 private: true 的文章。
+// 这个页面刻意不做任何入口——首页与 SectionNav 都不链接到 /me/，
+// 能否来到这里只取决于你是否知道路径。
+const posts = (await getCollection('posts', ({ data }) => data.private)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const title = '私密区';
+const description = '不在公开列表中出现的文章存档。';
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/me/">
+  <div class="mx-auto max-w-3xl px-6 py-14">
+    <header class="border-b border-(--color-border) pb-8">
+      <div class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-(--color-muted)">
+        <a href="/" class="text-(--color-muted) hover:text-(--color-accent-strong)">Ecliptic Event</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-(--color-accent-strong)">Private</span>
+      </div>
+
+      <h1 class="mt-5 flex items-baseline gap-3 text-3xl md:text-4xl font-bold leading-[1.2] tracking-tight">
+        {title}
+        <span class="font-mono text-sm font-normal text-(--color-muted)">({posts.length})</span>
+      </h1>
+
+      <p class="mt-4 max-w-lg text-[0.98rem] leading-relaxed text-(--color-muted)">
+        {description} 这些文章不会出现在首页、分区页或全站导航里，只有知道这个地址才能找到它们。
+      </p>
+    </header>
+
+    <main id="main" class="mt-10">
+      {posts.length > 0 ? (
+        <ul class="space-y-6">
+          {posts.map((post, i) => (
+            <li>
+              <PostCard
+                post={post}
+                volume={`Vol. ${String(i + 1).padStart(2, '0')}`}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="rounded-lg border border-dashed border-(--color-border) px-4 py-10 text-center font-mono text-xs text-(--color-muted)">
+          这里还没有私密文章。
+        </p>
+      )}
+    </main>
+  </div>
+</BaseLayout>

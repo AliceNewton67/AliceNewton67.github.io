@@ -5,9 +5,10 @@ import { getCollection } from 'astro:content';
 import { SECTIONS, sectionHref } from '../config/sections';
 
 // 使用 Content Layer API 的 getCollection（替代已废弃的旧用法）
-// 生产构建时过滤 draft: true
+// 生产构建时过滤 draft: true；private 文章一律不进公开列表
 const allPosts = (await getCollection('posts'))
   .filter((post) => import.meta.env.PROD ? !post.data.draft : true)
+  .filter((post) => !post.data.private)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 // 按分区聚合：空分区仍然渲染（未来写的游戏/数学会自己出现）

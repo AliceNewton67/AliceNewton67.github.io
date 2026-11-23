@@ -16,6 +16,7 @@ const section = getSection(key!)!;
 
 const posts = (await getCollection('posts'))
   .filter((post) => import.meta.env.PROD ? !post.data.draft : true)
+  .filter((post) => !post.data.private)
   .filter((post) => post.data.section === section.key)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 

@@ -5,6 +5,7 @@ description: "deepseek大家耳熟能详，deepseek harness则是deepseek的专�
 tags:
   - Tutorial
 draft: false
+private: true
 section: cs
 mathEnabled: false
 ---

@@ -18,6 +18,8 @@ const posts = defineCollection({
     tags: z.array(z.string()).default([]),
     // 草稿：为 true 时在生产构建中被排除
     draft: z.boolean().default(false),
+    // 私密：为 true 时不出现在首页、分区页等公开列表（文章本身仍静态生成）
+    private: z.boolean().default(false),
     // 是否启用数学公式（影响构建时 KaTeX 处理）
     mathEnabled: z.boolean().default(false),
     // 摘要：用于首页文章列表
