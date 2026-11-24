@@ -13,6 +13,8 @@ interface Props {
   ogImage?: string;
   /** 文章结构化数据（JSON-LD）可选 */
   jsonLd?: object;
+  /** 页面皮肤：default 为琥珀主题，sakura 为 /me 的粉色樱花皮肤 */
+  skin?: 'default' | 'sakura';
 }
 
 const {
@@ -21,6 +23,7 @@ const {
   canonicalPath,
   ogImage,
   jsonLd,
+  skin = 'default',
 } = Astro.props;
 
 const site = new URL(Astro.site ?? 'https://ecliptic-event.example.com/', Astro.request.url);
@@ -35,7 +38,10 @@ const ogImageURL = ogImage ? new URL(ogImage.replace(/^\//, ''), site).href : un
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html
+  lang="zh-CN"
+  class={skin === 'sakura' ? 'skin-sakura' : undefined}
+>
   <head>
     <meta charset="utf-8" />
     <!-- 无 FOUC 的主题切换：
@@ -78,7 +84,7 @@ const ogImageURL = ogImage ? new URL(ogImage.replace(/^\//, ''), site).href : un
     {ogImageURL && <meta name="twitter:image" content={ogImageURL} />}
 
     <!-- 主题色（浏览器地址栏） -->
-    <meta name="theme-color" content="#0b1017" />
+    <meta name="theme-color" content={skin === 'sakura' ? '#fff7fa' : '#0b1017'} />
 
     <!-- RSS 源（可选：如有 feed） -->
     <link

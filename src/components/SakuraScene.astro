@@ -1,0 +1,299 @@
+---
+// 樱花场景：只挂在 /me 私密区。
+// 花瓣图形来自 SVG Repo 的 CC0 樱花，已染成粉色（见 /assets/sakura/LICENSE.txt）。
+// 大花影 + 粉色渐变底色负责“背景适配”，下落花瓣负责动态。
+---
+
+<div class="sakura-scene" aria-hidden="true">
+  <div class="sakura-blooms">
+    <img class="sakura-bloom sakura-bloom-a" src="/assets/sakura/blossom.svg" alt="" draggable="false" />
+    <img class="sakura-bloom sakura-bloom-b" src="/assets/sakura/blossom.svg" alt="" draggable="false" />
+    <img class="sakura-bloom sakura-bloom-c" src="/assets/sakura/blossom.svg" alt="" draggable="false" />
+    <img class="sakura-bloom sakura-bloom-d" src="/assets/sakura/blossom.svg" alt="" draggable="false" />
+    <img class="sakura-bloom sakura-bloom-e" src="/assets/sakura/blossom.svg" alt="" draggable="false" />
+  </div>
+  <div class="sakura-petals" id="sakura-petals"></div>
+  <div class="sakura-vignette"></div>
+</div>
+
+<button
+  class="sakura-toggle"
+  id="sakura-toggle"
+  type="button"
+  aria-pressed="true"
+  title="关闭樱花花瓣"
+>
+  <img class="sakura-toggle-icon" src="/assets/sakura/blossom.svg" alt="" width="14" height="14" />
+  <span class="sakura-toggle-label">花瓣：开</span>
+</button>
+
+<script is:inline>
+  (() => {
+    const KEY = 'ecliptic-sakura';
+    const layer = document.getElementById('sakura-petals');
+    const toggle = document.getElementById('sakura-toggle');
+    if (!layer || !toggle) return;
+
+    toggle.dataset.ready = 'true';
+    const label = toggle.querySelector('.sakura-toggle-label');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let stored = '';
+    try { stored = localStorage.getItem(KEY) || ''; } catch {}
+    let enabled = stored === 'on' || (stored === '' && !reduced);
+
+    function applyState() {
+      toggle.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+      toggle.title = enabled ? '关闭樱花花瓣' : '开启樱花花瓣';
+      label.textContent = enabled ? '花瓣：开' : '花瓣：关';
+    }
+
+    function render() {
+      layer.replaceChildren();
+      applyState();
+      if (!enabled) return;
+
+      const count = window.matchMedia('(max-width: 640px)').matches ? 10 : 20;
+      const fragment = document.createDocumentFragment();
+
+      for (let i = 0; i < count; i++) {
+        const petal = document.createElement('img');
+        petal.src = '/assets/sakura/blossom.svg';
+        petal.alt = '';
+        petal.className = 'sakura-petal';
+        petal.draggable = false;
+
+        const size = 14 + Math.random() * 16;
+        const duration = 9 + Math.random() * 9;
+        const delay = -Math.random() * duration;
+        const sway = (Math.random() * 2 - 1) * 90;
+        const rotation = 120 + Math.random() * 240;
+        const opacity = 0.45 + Math.random() * 0.4;
+
+        petal.style.setProperty('--x', (Math.random() * 100).toFixed(2) + '%');
+        petal.style.setProperty('--s', size.toFixed(1) + 'px');
+        petal.style.setProperty('--d', duration.toFixed(1) + 's');
+        petal.style.setProperty('--delay', delay.toFixed(1) + 's');
+        petal.style.setProperty('--sway', sway.toFixed(0) + 'px');
+        petal.style.setProperty('--rot', rotation.toFixed(0) + 'deg');
+        petal.style.setProperty('--o', opacity.toFixed(2));
+        fragment.appendChild(petal);
+      }
+
+      layer.appendChild(fragment);
+    }
+
+    toggle.addEventListener('click', () => {
+      enabled = !enabled;
+      try { localStorage.setItem(KEY, enabled ? 'on' : 'off'); } catch {}
+      render();
+    });
+
+    let small = window.matchMedia('(max-width: 640px)').matches;
+    window.addEventListener(
+      'resize',
+      () => {
+        const next = window.matchMedia('(max-width: 640px)').matches;
+        if (next !== small) {
+          small = next;
+          render();
+        }
+      },
+      { passive: true }
+    );
+
+    render();
+  })();
+</script>
+
+<style>
+  .sakura-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .sakura-blooms {
+    position: absolute;
+    inset: 0;
+  }
+
+  .sakura-bloom {
+    position: absolute;
+    height: auto;
+    opacity: var(--o, 0.12);
+    filter: blur(0.7px) saturate(0.95);
+    transform: rotate(var(--r, 0deg));
+    user-select: none;
+  }
+
+  .sakura-bloom-a {
+    width: 360px;
+    left: -120px;
+    top: 4%;
+    --o: 0.14;
+    --r: -18deg;
+  }
+
+  .sakura-bloom-b {
+    width: 300px;
+    right: -95px;
+    top: 12%;
+    --o: 0.12;
+    --r: 22deg;
+  }
+
+  .sakura-bloom-c {
+    width: 170px;
+    left: 4%;
+    top: 46%;
+    --o: 0.08;
+    --r: 12deg;
+  }
+
+  .sakura-bloom-d {
+    width: 330px;
+    right: -110px;
+    bottom: 5%;
+    --o: 0.13;
+    --r: -28deg;
+  }
+
+  .sakura-bloom-e {
+    width: 220px;
+    left: -70px;
+    bottom: 10%;
+    --o: 0.09;
+    --r: 24deg;
+  }
+
+  .sakura-petals {
+    position: absolute;
+    inset: 0;
+  }
+
+  .sakura-petal {
+    position: absolute;
+    top: -12vh;
+    left: var(--x, 50%);
+    width: var(--s, 18px);
+    height: auto;
+    opacity: 0;
+    animation: sakura-fall var(--d, 12s) linear var(--delay, 0s) infinite;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 1px 1px rgb(178 63 105 / 8%));
+    user-select: none;
+  }
+
+  @keyframes sakura-fall {
+    0% {
+      transform: translate3d(0, -12vh, 0) rotate(0deg);
+      opacity: 0;
+    }
+    8% {
+      opacity: var(--o, 0.7);
+    }
+    55% {
+      transform: translate3d(var(--sway, 0px), 60vh, 0) rotate(var(--rot, 180deg));
+    }
+    92% {
+      opacity: var(--o, 0.7);
+    }
+    100% {
+      transform: translate3d(calc(var(--sway, 0px) * -0.35), 112vh, 0) rotate(var(--rot, 180deg));
+      opacity: 0;
+    }
+  }
+
+  .sakura-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse at 50% 35%,
+      transparent 52%,
+      rgb(178 63 105 / 7%) 100%
+    );
+  }
+
+  .sakura-toggle {
+    position: fixed;
+    left: max(1rem, env(safe-area-inset-left));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    z-index: 50;
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    background: rgb(255 253 253 / 90%);
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    line-height: 1;
+    box-shadow: 0 4px 16px rgb(120 40 70 / 12%);
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
+  .sakura-toggle[data-ready='true'] {
+    display: inline-flex;
+  }
+
+  .sakura-toggle:hover {
+    color: var(--color-accent-strong);
+    border-color: var(--color-accent);
+  }
+
+  .sakura-toggle-icon {
+    width: 14px;
+    height: 14px;
+    opacity: 0.9;
+  }
+
+  @media (max-width: 640px) {
+    .sakura-bloom-a {
+      width: 230px;
+      left: -95px;
+      --o: 0.1;
+    }
+
+    .sakura-bloom-b {
+      width: 190px;
+      right: -80px;
+      --o: 0.09;
+    }
+
+    .sakura-bloom-c {
+      display: none;
+    }
+
+    .sakura-bloom-d {
+      width: 210px;
+      right: -90px;
+      --o: 0.1;
+    }
+
+    .sakura-bloom-e {
+      width: 140px;
+      left: -55px;
+      --o: 0.07;
+    }
+
+    .sakura-toggle {
+      left: max(0.7rem, env(safe-area-inset-left));
+      bottom: max(0.7rem, env(safe-area-inset-bottom));
+      padding: 0.3rem 0.5rem;
+      font-size: 0.56rem;
+    }
+
+    .sakura-toggle-icon {
+      width: 12px;
+      height: 12px;
+    }
+  }
+</style>

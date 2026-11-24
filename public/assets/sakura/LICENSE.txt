@@ -1,0 +1,11 @@
+樱花图形素材
+============
+
+来源：SVG Repo — Cherry Blossom
+https://www.svgrepo.com/svg/166831/cherry-blossom
+
+许可：CC0 1.0 通用（公有领域贡献）
+https://creativecommons.org/publicdomain/zero/1.0/
+
+本站改动：仅把填充色由黑色改为粉色（#f2a6bd），
+用作 /me 页面的下落花瓣与背景花影。
