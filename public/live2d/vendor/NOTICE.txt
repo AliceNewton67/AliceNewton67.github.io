@@ -1,0 +1,15 @@
+PIXI.js
+Copyright (c) 2013-2023 Mat Groves
+MIT License
+https://github.com/pixijs/pixijs
+
+pixi-live2d-display
+Copyright (c) 2019-2023 guansss
+MIT License
+https://github.com/guansss/pixi-live2d-display
+
+Live2D Cubism Core
+Copyright (c) Live2D Inc.
+Proprietary software. Used under the terms of the Live2D Cubism SDK.
+https://www.live2d.com/sdk/cubism/
+See also /live2d/NOTICE.md

@@ -1,0 +1,182 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = '素材署名';
+const description = '看板娘「溟月」与 Live2D 渲染器素材的署名、来源和许可说明。';
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath="/credits/"
+>
+  <div class="mx-auto max-w-3xl px-6 py-14">
+    <header class="border-b border-(--color-border) pb-8">
+      <div class="flex items-center gap-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-(--color-muted)">
+        <a href="/" class="text-(--color-muted) hover:text-(--color-accent-strong)">Ecliptic Event</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-(--color-accent-strong)">Credits</span>
+      </div>
+
+      <h1 class="mt-5 text-3xl md:text-4xl font-bold leading-[1.2] tracking-tight">
+        素材署名
+      </h1>
+
+      <p class="mt-4 max-w-lg text-[0.98rem] leading-relaxed text-(--color-muted)">
+        页面右下角的看板娘不是本站绘制的。她的形象、绑定与动作都来自社区，按原许可转载；
+        这里把署名、来源和改动范围写清楚。
+      </p>
+    </header>
+
+    <main id="main" class="mt-10 space-y-10">
+      <section>
+        <h2 class="font-mono text-xs uppercase tracking-[0.18em] text-(--color-accent-strong)">
+          01 · 看板娘「溟月」
+        </h2>
+        <p class="mt-4 text-[0.95rem] leading-relaxed text-(--color-muted)">
+          DS 鲸鱼娘，原创角色「溟月」，DeepSeek 女仆二创与 Live2D 绑定。
+        </p>
+        <ul class="mt-4 space-y-3 text-[0.95rem] leading-relaxed">
+          <li>
+            <strong>上善无形（上善）</strong> · 鲸鱼娘角色形象原作，原创 OC「溟月」
+            <br />
+            <a
+              href="https://www.pixiv.net/users/62155430"
+              class="font-mono text-[0.8rem] text-(--color-accent) hover:text-(--color-accent-strong)"
+            >
+              pixiv.net/users/62155430
+            </a>
+            <span class="text-(--color-muted)"> · </span>
+            <a
+              href="https://b23.tv/8h5L4xz"
+              class="font-mono text-[0.8rem] text-(--color-accent) hover:text-(--color-accent-strong)"
+            >
+              b23.tv/8h5L4xz
+            </a>
+          </li>
+          <li>
+            <strong>ZipZipPipe</strong> · 加入 DeepSeek 元素的女仆鲸鱼娘二次设计
+            <br />
+            <a
+              href="https://www.pixiv.net/users/18604994"
+              class="font-mono text-[0.8rem] text-(--color-accent) hover:text-(--color-accent-strong)"
+            >
+              pixiv.net/users/18604994
+            </a>
+            <span class="text-(--color-muted)"> · </span>
+            <a
+              href="https://b23.tv/Pnw6nG8"
+              class="font-mono text-[0.8rem] text-(--color-accent) hover:text-(--color-accent-strong)"
+            >
+              b23.tv/Pnw6nG8
+            </a>
+          </li>
+          <li>
+            <strong>氵六青</strong> · 本模型（Live2D 绑定 / 动作 / 表情）
+            <br />
+            <a
+              href="https://space.bilibili.com/11272072"
+              class="font-mono text-[0.8rem] text-(--color-accent) hover:text-(--color-accent-strong)"
+            >
+              space.bilibili.com/11272072
+            </a>
+          </li>
+        </ul>
+
+        <p class="mt-4 text-[0.95rem] leading-relaxed text-(--color-muted)">
+          许可：
+          <a
+            href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh"
+            class="text-(--color-accent) hover:text-(--color-accent-strong)"
+          >
+            CC BY-NC-SA 4.0
+          </a>
+          （署名 · 非商业性使用 · 相同方式共享）。本站为个人非商业博客；若用于商业用途，
+          需分别取得上述三位版权所有人的授权。
+        </p>
+
+        <p class="mt-4 text-[0.95rem] leading-relaxed text-(--color-muted)">
+          来源：
+          <a
+            href="https://www.npmjs.com/package/dsh-pet-live2d"
+            class="text-(--color-accent) hover:text-(--color-accent-strong)"
+          >
+            dsh-pet-live2d 3.4.1
+          </a>
+          （宠物包 <span class="font-mono text-[0.85em]">pets/ds-whale-girl</span>）。
+          本站原样转载了她的模型、贴图、动作与表情，未改动美术内容；只新写了网页加载与交互代码
+          （鼠标视线跟随、点击挤番茄酱、收起与唤回）。
+        </p>
+
+        <p class="mt-4 text-[0.95rem] leading-relaxed text-(--color-muted)">
+          模型文件位于
+          <a
+            href="/live2d/ds-whale-girl/LICENSE"
+            class="font-mono text-[0.85em] text-(--color-accent) hover:text-(--color-accent-strong)"
+          >
+            /live2d/ds-whale-girl/
+          </a>
+          ，原许可文本随文件一同分发。
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-mono text-xs uppercase tracking-[0.18em] text-(--color-accent-strong)">
+          02 · Live2D Cubism Core
+        </h2>
+        <p class="mt-4 text-[0.95rem] leading-relaxed text-(--color-muted)">
+          模型由 Live2D Cubism Core 运行时驱动。Core 为 Live2D Inc. 的专有软件，
+          按 Live2D Cubism SDK 的许可条款随站点一同使用；它不适用模型本身的 CC 许可。
+          相关文件位于
+          <span class="font-mono text-[0.85em]">/live2d/vendor/live2dcubismcore.min.js</span>。
+        </p>
+      </section>
+
+      <section>
+        <h2 class="font-mono text-xs uppercase tracking-[0.18em] text-(--color-accent-strong)">
+          03 · 渲染器
+        </h2>
+        <ul class="mt-4 space-y-2 text-[0.95rem] leading-relaxed text-(--color-muted)">
+          <li>
+            <a
+              href="https://pixijs.com/"
+              class="font-mono text-[0.85em] text-(--color-accent) hover:text-(--color-accent-strong)"
+            >
+              PIXI.js
+            </a>
+            6.5.10 · MIT
+          </li>
+          <li>
+            <a
+              href="https://github.com/guansss/pixi-live2d-display"
+              class="font-mono text-[0.85em] text-(--color-accent) hover:text-(--color-accent-strong)"
+            >
+              pixi-live2d-display
+            </a>
+            0.4.0 · MIT
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-mono text-xs uppercase tracking-[0.18em] text-(--color-accent-strong)">
+          04 · 本站的改动
+        </h2>
+        <p class="mt-4 text-[0.95rem] leading-relaxed text-(--color-muted)">
+          本站没有重新绑定或修改模型美术。新增的只有
+          <span class="font-mono text-[0.85em]">src/components/WhalePet.astro</span>
+          里的舞台、加载逻辑和点击互动；模型文件按原目录结构原样转载。
+        </p>
+      </section>
+
+      <p class="border-t border-(--color-border) pt-6 text-center">
+        <a
+          href="/"
+          class="font-mono text-xs text-(--color-accent) hover:text-(--color-accent-strong)"
+        >
+          ← 回到首页
+        </a>
+      </p>
+    </main>
+  </div>
+</BaseLayout>
