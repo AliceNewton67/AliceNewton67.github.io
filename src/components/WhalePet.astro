@@ -1,11 +1,34 @@
 ---
-// DS 鲸鱼娘「溟月」看板娘。
-// 模型素材：CC BY-NC-SA 4.0（上善无形 / ZipZipPipe / 氵六青），
-// 见 /credits/ 与 /live2d/ds-whale-girl/LICENSE。
+// DS 鲸鱼娘「溟月」。
+// 默认只加载一张 90 KB 的静态预览贴纸；点它才会加载 5 MB 的 Live2D 模型。
+// 模型素材：CC BY-NC-SA 4.0（上善无形 / ZipZipPipe / 氵六青），见 /credits/。
 // 渲染器：PIXI.js 6 + pixi-live2d-display 0.4（Cubism 4），全部自托管。
 ---
 
-<div class="whale-pet" id="whale-pet">
+<div class="whale-poster-wrap" id="whale-poster-wrap">
+  <button
+    class="whale-poster"
+    id="whale-poster"
+    type="button"
+    aria-label="点我加载 Live2D 鲸鱼娘（首次约 5 MB）"
+    title="点我加载 Live2D 鲸鱼娘；模型：溟月，作者 上善无形 / ZipZipPipe / 氵六青，CC BY-NC-SA 4.0"
+  >
+    <img
+      class="whale-poster-image"
+      src="/live2d/ds-whale-girl/preview.png"
+      alt=""
+      width="268"
+      height="268"
+      draggable="false"
+    />
+    <span class="whale-poster-label" id="whale-poster-label">▶ Live2D · 点我</span>
+  </button>
+  <a class="whale-poster-credit" href="/credits/" title="看板娘素材署名与许可">
+    溟月 · CC BY-NC-SA 4.0
+  </a>
+</div>
+
+<div class="whale-pet" id="whale-pet" hidden>
   <button class="whale-pet-hide" type="button" aria-label="收起看板娘" title="收起看板娘">
     ×
   </button>
@@ -33,17 +56,14 @@
   </p>
 </div>
 
-<button class="whale-pet-boot" id="whale-pet-boot" type="button" aria-live="polite">
+<button class="whale-pet-boot" id="whale-pet-boot" type="button" aria-live="polite" hidden>
   鲸鱼娘正在游过来…
-</button>
-
-<button class="whale-pet-return" type="button" aria-label="唤回看板娘" title="唤回看板娘">
-  鲸
 </button>
 
 <script is:inline>
   (() => {
     const KEY = 'ecliptic-whale';
+    const SESSION = 'ecliptic-whale-live2d';
     const root = document.documentElement;
     const pet = document.getElementById('whale-pet');
     const stage = document.getElementById('whale-pet-stage');
@@ -51,19 +71,49 @@
     const bubble = document.getElementById('whale-pet-bubble');
     const boot = document.getElementById('whale-pet-boot');
     const hideButton = pet.querySelector('.whale-pet-hide');
-    const returnButton = document.querySelector('.whale-pet-return');
+    const posterWrap = document.getElementById('whale-poster-wrap');
+    const poster = document.getElementById('whale-poster');
+    const posterLabel = document.getElementById('whale-poster-label');
 
     let app = null;
     let model = null;
     let starting = false;
+    let hiddenState = false;
     let bubbleTimer = 0;
     let slowHint = 0;
     const focus = { x: 0, y: 0, queued: false };
 
-    const isHidden = () => root.classList.contains('whale-hidden');
     const isSmall = () => window.matchMedia('(max-width: 640px)').matches;
+    const readHidden = () => {
+      try { return localStorage.getItem(KEY) === 'hidden'; } catch { return false; }
+    };
+    const readOptIn = () => {
+      try { return sessionStorage.getItem(SESSION) === '1'; } catch { return false; }
+    };
+    const writeHidden = (hidden) => {
+      try {
+        if (hidden) localStorage.setItem(KEY, 'hidden');
+        else localStorage.removeItem(KEY);
+      } catch {}
+    };
+    const writeOptIn = () => {
+      try { sessionStorage.setItem(SESSION, '1'); } catch {}
+    };
 
-    function setBoot(text, mode) {
+    function showPoster(label, mode = 'idle') {
+      if (app) app.ticker.stop();
+      posterWrap.hidden = false;
+      poster.dataset.mode = mode;
+      posterLabel.textContent = label;
+      boot.hidden = true;
+      pet.hidden = true;
+    }
+
+    function hidePoster() {
+      posterWrap.hidden = true;
+    }
+
+    function setBoot(text, mode = 'loading') {
       clearTimeout(slowHint);
       boot.textContent = text;
       boot.dataset.mode = mode;
@@ -85,32 +135,32 @@
     }
 
     function setHidden(hidden) {
-      root.classList.toggle('whale-hidden', hidden);
-      try {
-        localStorage.setItem(KEY, hidden ? 'hidden' : 'shown');
-      } catch {}
+      hiddenState = hidden;
+      writeHidden(hidden);
       if (hidden) {
-        hideBoot();
         if (app) app.ticker.stop();
-      } else {
-        if (app) {
-          app.ticker.start();
-          hideBoot();
-        } else {
-          setBoot('鲸鱼娘正在游过来…', 'loading');
-          ensureModel();
-        }
+        showPoster('▶ Live2D · 点我');
+        return;
       }
+      if (app && model) {
+        hidePoster();
+        hideBoot();
+        pet.hidden = false;
+        app.ticker.start();
+        return;
+      }
+      hidePoster();
+      setBoot('鲸鱼娘正在游过来…', 'loading');
+      ensureModel();
     }
 
     hideButton.addEventListener('click', () => setHidden(true));
-    returnButton.addEventListener('click', () => setHidden(false));
-    boot.addEventListener('click', () => {
-      if (boot.dataset.mode === 'error') {
+    poster.addEventListener('click', () => {
+      if (poster.dataset.mode === 'error') {
         window.location.reload();
         return;
       }
-      if (boot.dataset.mode === 'idle') ensureModel();
+      setHidden(false);
     });
 
     function loadScript(src) {
@@ -135,16 +185,18 @@
       starting = false;
       root.dataset.whale = 'error';
       root.dataset.whaleError = message;
-      setBoot('她卡住了，点我重试', 'error');
-      boot.title = message;
+      hideBoot();
+      showPoster('加载失败 · 点我重试', 'error');
+      poster.title = message;
     }
 
     async function ensureModel() {
-      if (starting || isHidden()) return;
+      if (starting || hiddenState) return;
       starting = true;
+      hidePoster();
       setBoot('鲸鱼娘正在游过来…', 'loading');
       slowHint = window.setTimeout(() => {
-        if (starting && !isHidden()) boot.textContent = '还在游…首次约 5 MB';
+        if (starting && !hiddenState) boot.textContent = '还在游…首次约 5 MB';
       }, 12000);
       try {
         await Promise.race([
@@ -206,12 +258,15 @@
       layout();
       window.addEventListener('resize', layout, { passive: true });
 
-      // 现成的吃饭道具：左手「蛋包饭」，点击时挤番茄酱。
       model.expression('蛋包饭').catch(() => {});
 
       pet.dataset.ready = 'true';
-      root.dataset.whale = 'ready';
+      pet.hidden = false;
+      hidePoster();
       hideBoot();
+      root.dataset.whale = 'ready';
+      writeOptIn();
+      writeHidden(false);
       say('今天也想来一碗白米饭…', 5200);
 
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -249,22 +304,101 @@
       }
     }
 
-    if (isHidden()) {
-      hideBoot();
-    } else if (isSmall()) {
-      setBoot('点我叫醒鲸鱼娘', 'idle');
-    } else {
+    hiddenState = readHidden();
+    if (hiddenState) {
+      showPoster('▶ Live2D · 点我');
+    } else if (readOptIn()) {
+      hidePoster();
       setBoot('鲸鱼娘正在游过来…', 'loading');
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', ensureModel, { once: true });
-      } else {
-        ensureModel();
-      }
+      ensureModel();
+    } else {
+      showPoster('▶ Live2D · 点我');
     }
   })();
 </script>
 
 <style>
+  .whale-poster-wrap {
+    position: fixed;
+    right: max(0.9rem, env(safe-area-inset-right));
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+    z-index: 44;
+    width: 132px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.18rem;
+    pointer-events: none;
+  }
+
+  .whale-poster-wrap[hidden] {
+    display: none !important;
+  }
+
+  .whale-poster {
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    text-align: left;
+    border: 1px solid var(--color-border);
+    border-radius: 0.85rem;
+    background: var(--color-surface);
+    box-shadow: 0 14px 34px -22px rgb(0 0 0 / 55%);
+    cursor: pointer;
+    pointer-events: auto;
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .whale-poster:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .whale-poster[data-mode='error'] {
+    border-color: var(--color-accent);
+  }
+
+  .whale-poster-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: #1a1a1a;
+    user-select: none;
+  }
+
+  .whale-poster-label {
+    display: block;
+    padding: 0.28rem 0.42rem 0.3rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    line-height: 1.25;
+  }
+
+  .whale-poster:hover .whale-poster-label {
+    color: var(--color-accent-strong);
+  }
+
+  .whale-poster-credit {
+    text-align: right;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+    line-height: 1.3;
+    text-decoration: none;
+    opacity: 0.75;
+    pointer-events: auto;
+  }
+
+  .whale-poster-credit:hover {
+    color: var(--color-accent-strong);
+  }
+
   .whale-pet {
     position: fixed;
     right: max(0.9rem, env(safe-area-inset-right));
@@ -277,6 +411,10 @@
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.45s ease;
+  }
+
+  .whale-pet[hidden] {
+    display: none !important;
   }
 
   .whale-pet[data-ready='true'] {
@@ -422,19 +560,6 @@
     animation: whale-pulse 1.5s ease-in-out infinite;
   }
 
-  .whale-pet-boot[data-mode='idle'],
-  .whale-pet-boot[data-mode='error'] {
-    pointer-events: auto;
-    cursor: pointer;
-    border-color: var(--color-accent);
-    color: var(--color-accent-strong);
-  }
-
-  .whale-pet-boot[data-mode='error']::before {
-    animation: none;
-    background: var(--color-accent);
-  }
-
   @keyframes whale-pulse {
     0%,
     100% {
@@ -447,42 +572,21 @@
     }
   }
 
-  .whale-pet-return {
-    display: none;
-    position: fixed;
-    right: max(0.9rem, env(safe-area-inset-right));
-    bottom: max(0.7rem, env(safe-area-inset-bottom));
-    z-index: 45;
-    width: 2.1rem;
-    height: 2.1rem;
-    padding: 0;
-    border: 1px solid var(--color-border);
-    border-radius: 9999px;
-    background: color-mix(in srgb, var(--color-surface) 90%, transparent);
-    color: var(--color-muted);
-    font-family: var(--font-sans);
-    font-size: 0.82rem;
-    line-height: 1;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 16%);
-  }
-
-  .whale-pet-return:hover {
-    color: var(--color-accent-strong);
-    border-color: var(--color-accent);
-  }
-
-  :global(html.whale-hidden) .whale-pet,
-  :global(html.whale-hidden) .whale-pet-boot {
-    display: none;
-  }
-
-  :global(html.whale-hidden) .whale-pet-return {
-    display: grid;
-    place-items: center;
-  }
-
   @media (max-width: 640px) {
+    .whale-poster-wrap {
+      width: 104px;
+      right: max(0.7rem, env(safe-area-inset-right));
+      bottom: max(0.7rem, env(safe-area-inset-bottom));
+    }
+
+    .whale-poster-label {
+      font-size: 0.52rem;
+    }
+
+    .whale-poster-credit {
+      font-size: 0.46rem;
+    }
+
     .whale-pet {
       width: 176px;
     }
@@ -515,6 +619,10 @@
   }
 
   @media (max-width: 400px) {
+    .whale-poster-wrap {
+      width: 92px;
+    }
+
     .whale-pet {
       width: 150px;
     }

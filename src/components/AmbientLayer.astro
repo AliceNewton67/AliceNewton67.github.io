@@ -1,0 +1,180 @@
+---
+// 轻量氛围层：渐变光、颗粒、微尘、光标柔光。
+// 全部由 CSS 与少量 JS 生成；唯一的贴图是 10 KB 的程序化噪点。
+// /me 的粉色樱花由 SakuraScene 负责，这里会自动跳过微尘，只保留光与颗粒。
+---
+
+<div class="ambient-layer" id="ambient-layer" aria-hidden="true">
+  <div class="ambient-glow ambient-glow-a"></div>
+  <div class="ambient-glow ambient-glow-b"></div>
+  <div class="ambient-dust" id="ambient-dust"></div>
+  <div class="ambient-grain"></div>
+  <div class="ambient-cursor" id="ambient-cursor"></div>
+</div>
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const layer = document.getElementById('ambient-layer');
+    const dustLayer = document.getElementById('ambient-dust');
+    const cursor = document.getElementById('ambient-cursor');
+    if (!layer || !dustLayer) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isSakura = root.classList.contains('skin-sakura');
+
+    // 微尘只在暗色页面出现；/me 已经有樱花瓣了。
+    if (!isSakura && !reduced) {
+      const count = window.matchMedia('(max-width: 640px)').matches ? 10 : 16;
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('span');
+        dot.style.setProperty('--x', (Math.random() * 100).toFixed(2) + '%');
+        dot.style.setProperty('--y', (Math.random() * 100).toFixed(2) + '%');
+        dot.style.setProperty('--s', (2 + Math.random() * 2).toFixed(1) + 'px');
+        dot.style.setProperty('--o', (0.18 + Math.random() * 0.32).toFixed(2));
+        dot.style.setProperty('--d', (9 + Math.random() * 9).toFixed(1) + 's');
+        dot.style.setProperty('--delay', (-Math.random() * 12).toFixed(1) + 's');
+        fragment.appendChild(dot);
+      }
+      dustLayer.appendChild(fragment);
+    }
+
+    // 鼠标柔光：只在精细指针、且未开启减少动态时跟随。
+    if (cursor && !reduced && window.matchMedia('(pointer: fine)').matches) {
+      let x = 0;
+      let y = 0;
+      let queued = false;
+
+      const move = (event) => {
+        x = event.clientX;
+        y = event.clientY;
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+          queued = false;
+          cursor.style.setProperty('--cx', x + 'px');
+          cursor.style.setProperty('--cy', y + 'px');
+          cursor.style.opacity = '0.14';
+        });
+      };
+
+      window.addEventListener('pointermove', move, { passive: true });
+      window.addEventListener('pointerleave', () => {
+        cursor.style.opacity = '0';
+      });
+    }
+  })();
+</script>
+
+<style>
+  .ambient-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .ambient-glow {
+    position: absolute;
+    width: 75vmax;
+    height: 75vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--color-accent) 0%, transparent 62%);
+    opacity: 0.1;
+    animation: ambient-drift 32s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  .ambient-glow-a {
+    left: -25vmax;
+    top: -20vmax;
+  }
+
+  .ambient-glow-b {
+    right: -28vmax;
+    bottom: -22vmax;
+    opacity: 0.08;
+    animation-delay: -16s;
+  }
+
+  .ambient-dust {
+    position: absolute;
+    inset: 0;
+  }
+
+  .ambient-dust span {
+    position: absolute;
+    left: var(--x, 50%);
+    top: var(--y, 50%);
+    width: var(--s, 2px);
+    height: var(--s, 2px);
+    border-radius: 50%;
+    background: var(--color-accent);
+    opacity: var(--o, 0.3);
+    box-shadow: 0 0 7px var(--color-accent);
+    animation: dust-float var(--d, 12s) ease-in-out var(--delay, 0s) infinite alternate;
+    will-change: transform, opacity;
+  }
+
+  .ambient-grain {
+    position: absolute;
+    inset: 0;
+    background-image: url('/assets/ambient/noise.png');
+    background-size: 64px 64px;
+    opacity: 0.05;
+    mix-blend-mode: soft-light;
+  }
+
+  .ambient-cursor {
+    position: absolute;
+    left: var(--cx, 50%);
+    top: var(--cy, 50%);
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--color-accent) 0%, transparent 60%);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.4s ease;
+    will-change: left, top, opacity;
+  }
+
+  @keyframes ambient-drift {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(3vmax, 2vmax, 0) scale(1.05);
+    }
+  }
+
+  @keyframes dust-float {
+    from {
+      transform: translate3d(0, 0, 0);
+      opacity: var(--o, 0.3);
+    }
+    to {
+      transform: translate3d(10px, -18px, 0);
+      opacity: calc(var(--o, 0.3) * 0.45);
+    }
+  }
+
+  @media (pointer: coarse) {
+    .ambient-cursor {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ambient-glow,
+    .ambient-dust span {
+      animation: none;
+    }
+
+    .ambient-cursor {
+      display: none;
+    }
+  }
+</style>

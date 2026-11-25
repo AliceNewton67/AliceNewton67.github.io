@@ -2,6 +2,7 @@
 import '../styles/global.css';
 // 站点级元信息（可被页面覆盖）
 import SectionNav from '../components/SectionNav.astro';
+import AmbientLayer from '../components/AmbientLayer.astro';
 import WhalePet from '../components/WhalePet.astro';
 
 interface Props {
@@ -53,12 +54,6 @@ const ogImageURL = ogImage ? new URL(ogImage.replace(/^\//, ''), site).href : un
         let theme = 'dark';
         try { theme = localStorage.getItem(key) || 'dark'; } catch {}
         if (theme === 'light') document.documentElement.classList.add('light');
-        // 看板娘收起状态：在 CSS 可用前定好，避免闪一下又消失
-        try {
-          if (localStorage.getItem('ecliptic-whale') === 'hidden') {
-            document.documentElement.classList.add('whale-hidden');
-          }
-        } catch {}
       })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -117,7 +112,10 @@ const ogImageURL = ogImage ? new URL(ogImage.replace(/^\//, ''), site).href : un
       跳到正文
     </a>
     <SectionNav />
-    <slot />
+    <div class="page-stack">
+      <slot />
+    </div>
+    <AmbientLayer />
     <WhalePet />
   </body>
 </html>

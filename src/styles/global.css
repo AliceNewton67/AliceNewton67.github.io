@@ -152,8 +152,16 @@
 
 /* ========== 分区导航 ========== */
 .section-nav {
+  position: relative;
+  z-index: 3;
   border-bottom: 1px solid var(--color-border);
   background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+}
+
+/* 页面内容压在环境光之上，导航再压一层 */
+.page-stack {
+  position: relative;
+  z-index: 2;
 }
 .section-nav-home,
 .section-nav-link {

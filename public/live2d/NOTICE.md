@@ -13,6 +13,8 @@
 https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh
 
 来源：dsh-pet-live2d 3.4.1，宠物包 `pets/ds-whale-girl`。
+角落默认显示的静态贴纸 `preview.png` 是该包 `previews/idle.png` 的原样使用，
+仅以圆角卡片展示；没有改画。
 
 ---
 
